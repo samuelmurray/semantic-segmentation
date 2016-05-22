@@ -35,7 +35,7 @@ def bounding_box_objects(file_path):
 
 
 def bounding_boxes():
-    g = glob.iglob('../data/VOC2012/Annotations/*.xml')
+    g = glob.iglob('data/VOC2012/Annotations/*.xml')
     bounding_boxes = {}
     for file_name in g:
         picture_name, data = bounding_box_objects(file_name)
