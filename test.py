@@ -31,10 +31,6 @@ to use this script to perform image recognition.
 https://tensorflow.org/tutorials/image_recognition/
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os.path
 import re
 import sys
@@ -156,23 +152,25 @@ def run_inference_on_image(image):
     if not tf.gfile.Exists(image):
         tf.logging.fatal('File does not exist %s', image)
     image_data = tf.gfile.FastGFile(image, 'rb').read()
-
     # Creates graph from saved GraphDef.
     create_graph()
-
+    graph = tf.get_default_graph()
+    end_of_graph = graph.get_tensor_by_name('mixed_10/join:0')
     with tf.Session() as sess:
         # Some useful tensors:
-        # 'softmax:0': A tensor containing the normalized prediction across
-        #   1000 labels.
-        # 'pool_3:0': A tensor containing the next-to-last layer containing 2048
-        #   float description of the image.
-        # 'DecodeJpeg/contents:0': A tensor containing a string providing JPEG
-        #   encoding of the image.
+        # 'softmax:0': A tensor containing the normalized prediction across 1000 labels.
+        # 'pool_3:0': A tensor containing the next-to-last layer containing 2048 float description of the image.
+        # 'DecodeJpeg/contents:0': A tensor containing a string providing JPEG encoding of the image.
         # Runs the softmax tensor by feeding the image_data as input to the graph.
-        softmax_tensor = sess.graph.get_tensor_by_name('softmax:0')
+
+        #output = sess.run(end_of_graph, {'DecodeJpeg/contents:0': image_data})
+
+        writer = tf.train.SummaryWriter("/tmp/tfGraph", sess.graph)
+        softmax_tensor = graph.get_tensor_by_name('pool_3:0')
         predictions = sess.run(softmax_tensor,
                                {'DecodeJpeg/contents:0': image_data})
         predictions = np.squeeze(predictions)
+        print(predictions.shape)
 
         # Creates node ID --> English string lookup.
         node_lookup = NodeLookup()
@@ -207,7 +205,7 @@ def maybe_download_and_extract():
 def main(_):
     maybe_download_and_extract()
     image = (FLAGS.image_file if FLAGS.image_file else
-             os.path.join(FLAGS.model_dir, 'cropped_panda.jpg'))
+             os.path.join(FLAGS.model_dir, 'panda.jpeg'))
     run_inference_on_image(image)
 
 
