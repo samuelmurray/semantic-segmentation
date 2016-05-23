@@ -1,3 +1,6 @@
+from PIL import Image
+from ImageCrop import ImageCrop
+
 def generate_crops(image, max_num_images: int = 500):
     lambdas = [1, 1.3, 1.6, 2, 2.4, 2.8, 3.2, 3.6, 4]
     width, height = image.size
@@ -37,9 +40,9 @@ def generate_and_save_crops(image, image_name: str, save_location = None, max_nu
     import os
     if save_location is None:
         try:
-            os.mkdir("./images/")
+            os.mkdir("images/")
         except: pass
-        save_location = "./images/cropped_{}/".format(image_name)
+        save_location = "images/cropped_{}/".format(image_name)
         dir = os.path.dirname(save_location)
         print(dir)
         try:
@@ -47,3 +50,40 @@ def generate_and_save_crops(image, image_name: str, save_location = None, max_nu
         except: pass
     for item in generate_crops(image, max_num_images):
         item[0].save(save_location + "{}_{}_{}_{}".format(item[1], item[2], item[3], item[4]) + ".jpg")
+
+
+def generate_crops2(image_path, max_num_images: int = 500):
+    lambdas = [1, 1.3, 1.6, 2, 2.4, 2.8, 3.2, 3.6, 4]
+    image = Image.open(image_path)
+    width, height = image.size
+    count = 0
+    for l in lambdas:
+        s = min(width, height) / l
+        i = 0
+        within_width = True
+        while within_width:
+            j = 0
+            within_height = True
+            while within_height:
+                start_x = round(i * s)
+                start_y = round(j * s)
+                end_x = round((i + 1) * s)
+                end_y = round((j + 1) * s)
+                if end_x > width:
+                    end_x = width
+                    start_x = round(width - s)
+                    within_width = False
+                if end_y > height:
+                    end_y = height
+                    start_y = round(height - s)
+                    within_height = False
+                # x_min: int, y_min: int, x_max: int, y_max: int
+                bla = ImageCrop(image, start_x, start_y, end_x, end_y)
+                yield bla
+                j += 0.5
+                count += 1
+                if count >= max_num_images:
+                    print("The maximum number of images ({}) was generated".format(max_num_images))
+                    return
+            i += 0.5
+    print("{} patches were generated".format(count))
