@@ -29,7 +29,7 @@ class PascalImage:
         coords = dict([(key, val) for key, val in data['bndbox'].items()])
         x_min = int(coords['xmin'])
         x_max = int(coords['xmax'])
-        y_min = int(float(coords['ymin']))  # One rouge image had a float coordinate
+        y_min = int(float(coords['ymin']))  # One rogue image had a float coordinate
         y_max = int(coords['ymax'])
         bbox = BoundingBox(object_name, x_min, y_min, x_max, y_max, is_difficult)
         self.bounding_boxes.append(bbox)
