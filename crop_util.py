@@ -50,8 +50,9 @@ def generate_and_save_crops(image, image_name: str, save_location: str = None, m
             os.mkdir(dir)
         except: pass
     for image_crop in generate_crops(image, max_num_images):
-        image_crop.image.save(save_location + "{}_{}_{}_{}".format(
-            image_crop.x_min, image_crop.y_min, image_crop.x_max, image_crop.y_max) + ".jpg")
+        #image_crop.image.save(save_location + "{}_{}_{}_{}".format(
+        #    image_crop.x_min, image_crop.y_min, image_crop.x_max, image_crop.y_max) + ".jpg")
+        image_crop.save(save_location)
 
 
 def generate_crops2(image_path, max_num_images: int = 500):
