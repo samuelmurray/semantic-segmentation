@@ -1,7 +1,8 @@
 from PIL import Image
 from ImageCrop import ImageCrop
 
-def generate_crops(image, max_num_images: int = 500):
+
+def generate_crops(image, max_num_images: int = 500) -> ImageCrop:
     lambdas = [1, 1.3, 1.6, 2, 2.4, 2.8, 3.2, 3.6, 4]
     width, height = image.size
     count = 0
@@ -13,21 +14,21 @@ def generate_crops(image, max_num_images: int = 500):
             j = 0
             within_height = True
             while within_height:
-                start_x = round(i * s)
-                start_y = round(j * s)
-                end_x = round((i + 1) * s)
-                end_y = round((j + 1) * s)
-                if end_x > width:
-                    end_x = width
-                    start_x = round(width - s)
+                x_min = round(i * s)
+                y_min = round(j * s)
+                x_max = round((i + 1) * s)
+                y_max = round((j + 1) * s)
+                if x_max > width:
+                    x_max = width
+                    x_min = round(width - s)
                     within_width = False
-                if end_y > height:
-                    end_y = height
-                    start_y = round(height - s)
+                if y_max > height:
+                    y_max = height
+                    y_min = round(height - s)
                     within_height = False
-                cropped_image = image.crop((start_x, start_y, end_x, end_y))
-                yield [cropped_image, start_x, start_y, end_x, end_y]
-                j += 0.5
+                cropped_image = image.crop((x_min, y_min, x_max, y_max))
+                yield ImageCrop(cropped_image, x_min, y_min, x_max, y_max)
+                j += 0.5 # Increase i and j by 0.5 to get 50% overlap between neighbouring crops
                 count += 1
                 if count >= max_num_images:
                     print("The maximum number of images ({}) was generated".format(max_num_images))
@@ -36,7 +37,7 @@ def generate_crops(image, max_num_images: int = 500):
     print("{} images were generated and saved".format(count))
 
 
-def generate_and_save_crops(image, image_name: str, save_location = None, max_num_images: int = 500):
+def generate_and_save_crops(image, image_name: str, save_location: str = None, max_num_images: int = 500):
     import os
     if save_location is None:
         try:
@@ -48,8 +49,9 @@ def generate_and_save_crops(image, image_name: str, save_location = None, max_nu
         try:
             os.mkdir(dir)
         except: pass
-    for item in generate_crops(image, max_num_images):
-        item[0].save(save_location + "{}_{}_{}_{}".format(item[1], item[2], item[3], item[4]) + ".jpg")
+    for image_crop in generate_crops(image, max_num_images):
+        image_crop.image.save(save_location + "{}_{}_{}_{}".format(
+            image_crop.x_min, image_crop.y_min, image_crop.x_max, image_crop.y_max) + ".jpg")
 
 
 def generate_crops2(image_path, max_num_images: int = 500):
@@ -65,20 +67,20 @@ def generate_crops2(image_path, max_num_images: int = 500):
             j = 0
             within_height = True
             while within_height:
-                start_x = round(i * s)
-                start_y = round(j * s)
-                end_x = round((i + 1) * s)
-                end_y = round((j + 1) * s)
-                if end_x > width:
-                    end_x = width
-                    start_x = round(width - s)
+                x_min = round(i * s)
+                y_min = round(j * s)
+                x_max = round((i + 1) * s)
+                y_max = round((j + 1) * s)
+                if x_max > width:
+                    x_max = width
+                    x_min = round(width - s)
                     within_width = False
-                if end_y > height:
-                    end_y = height
-                    start_y = round(height - s)
+                if y_max > height:
+                    y_max = height
+                    y_min = round(height - s)
                     within_height = False
                 # x_min: int, y_min: int, x_max: int, y_max: int
-                bla = ImageCrop(image, start_x, start_y, end_x, end_y)
+                bla = ImageCrop(image, x_min, y_min, x_max, y_max)
                 yield bla
                 j += 0.5
                 count += 1

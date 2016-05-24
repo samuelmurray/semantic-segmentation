@@ -9,5 +9,5 @@ print(type(image))
 width, height = image.size
 print("w = {}, h = {}".format(width, height))
 
-max_images = 500
-generate_and_save_crops(image, image_name, max_num_images=30)
+max_images = 30
+generate_and_save_crops(image, image_name, max_num_images=max_images)
