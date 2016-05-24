@@ -1,23 +1,26 @@
 import xmltodict
 import glob
 import os
-from BoundingBox import BoundingBox
-from PascalImage import PascalImage
+from typing import List
 import pickle
 
-def get_image_name(file_path):
+from BoundingBox import BoundingBox
+from PascalImage import PascalImage
+
+
+def get_image_name(file_path: str) -> str:
     start = len(file_path) - file_path[::-1].find("/")
     end = len(file_path) - file_path[::-1].find(".") - 1
     return file_path[start:end] + '.jpg'
 
 
-def xml_to_dict(xml_file_path, xml_attribs=True):
+def xml_to_dict(xml_file_path: str, xml_attribs: bool=True):
     with open(xml_file_path, "rb") as f:  # notice the "rb" mode
         d = xmltodict.parse(f, xml_attribs=xml_attribs)
         return d
 
 
-def generate_bounding_box(data):
+def generate_bounding_box(data) -> BoundingBox:
     object_name = data['name']
     is_difficult = bool(int(data['difficult']))
     coords = dict([(key, val) for key, val in data['bndbox'].items()])
@@ -28,7 +31,7 @@ def generate_bounding_box(data):
     return BoundingBox(object_name, x_min, y_min, x_max, y_max, is_difficult)
 
 
-def bounding_boxes_of_image(image_path):
+def bounding_boxes_of_image(image_path: str) -> List[BoundingBox]:
     data = xml_to_dict(image_path)
 
     data = data['annotation']['object']
@@ -42,7 +45,7 @@ def bounding_boxes_of_image(image_path):
     return ret
 
 
-def get_bounding_boxes(folder_path):
+def get_bounding_boxes(folder_path: str):
     file_path = 'data/pickles/bounding_boxes_by_image.p'
     if os.path.isfile(file_path):
         print("reading bounding boxes from file")
