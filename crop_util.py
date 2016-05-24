@@ -1,8 +1,10 @@
 from PIL import Image
+from typing import Iterator
+
 from ImageCrop import ImageCrop
 
 
-def generate_crops(image, max_num_images: int = 500) -> ImageCrop:
+def generate_crops(image, max_num_images: int = 500) -> Iterator[ImageCrop]:
     lambdas = [1, 1.3, 1.6, 2, 2.4, 2.8, 3.2, 3.6, 4]
     width, height = image.size
     count = 0
@@ -40,18 +42,10 @@ def generate_crops(image, max_num_images: int = 500) -> ImageCrop:
 def generate_and_save_crops(image, image_name: str, save_location: str = None, max_num_images: int = 500):
     import os
     if save_location is None:
-        try:
-            os.mkdir("images/")
-        except: pass
         save_location = "images/cropped_{}/".format(image_name)
-        dir = os.path.dirname(save_location)
-        print(dir)
-        try:
-            os.mkdir(dir)
-        except: pass
+    if not os.path.isdir(save_location):
+        os.makedirs(save_location)
     for image_crop in generate_crops(image, max_num_images):
-        #image_crop.image.save(save_location + "{}_{}_{}_{}".format(
-        #    image_crop.x_min, image_crop.y_min, image_crop.x_max, image_crop.y_max) + ".jpg")
         image_crop.save(save_location)
 
 
