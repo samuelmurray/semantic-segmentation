@@ -1,26 +1,15 @@
-from pprint import pprint
-from queue import Queue
-from threading import Thread
-
-from bbox_util import bounding_boxes
+from functools import partial
+from multiprocessing.pool import Pool
+from PascalImage import PascalImage
 
 
-class ImageWorker(Thread):
-    def __init__(self, queue, bboxes):
-        Thread.__init__(self)
-        self.queue = queue
-        self.bounding_boxes = bboxes
+image_path1 = '2007_000027'
+pi = PascalImage(image_path1)
+print(pi)
 
-    def run(self):
-        while True:
-            # Get work from the queue
-            image_path = self.queue.get()
-            # generate all patches
-            # save along with label saying if they are valid
-            self.queue.task_done()
-
-
-
+image_path2 = '2007_000032'
+pi = PascalImage(image_path2)
+print(pi)
 
 
 
