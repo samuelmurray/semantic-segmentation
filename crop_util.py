@@ -2,7 +2,7 @@ from PIL import Image
 from ImageCrop import ImageCrop
 
 
-def generate_crops(image, max_num_images: int = 500):
+def generate_crops(image, max_num_images: int = 500) -> ImageCrop:
     lambdas = [1, 1.3, 1.6, 2, 2.4, 2.8, 3.2, 3.6, 4]
     width, height = image.size
     count = 0
@@ -27,8 +27,8 @@ def generate_crops(image, max_num_images: int = 500):
                     y_min = round(height - s)
                     within_height = False
                 cropped_image = image.crop((x_min, y_min, x_max, y_max))
-                yield [cropped_image, x_min, y_min, x_max, y_max]
-                j += 0.5
+                yield ImageCrop(cropped_image, x_min, y_min, x_max, y_max)
+                j += 0.5 # Increase i and j by 0.5 to get 50% overlap between neighbouring crops
                 count += 1
                 if count >= max_num_images:
                     print("The maximum number of images ({}) was generated".format(max_num_images))
@@ -37,7 +37,7 @@ def generate_crops(image, max_num_images: int = 500):
     print("{} images were generated and saved".format(count))
 
 
-def generate_and_save_crops(image, image_name: str, save_location = None, max_num_images: int = 500):
+def generate_and_save_crops(image, image_name: str, save_location: str = None, max_num_images: int = 500):
     import os
     if save_location is None:
         try:
@@ -49,8 +49,9 @@ def generate_and_save_crops(image, image_name: str, save_location = None, max_nu
         try:
             os.mkdir(dir)
         except: pass
-    for item in generate_crops(image, max_num_images):
-        item[0].save(save_location + "{}_{}_{}_{}".format(item[1], item[2], item[3], item[4]) + ".jpg")
+    for image_crop in generate_crops(image, max_num_images):
+        image_crop.image.save(save_location + "{}_{}_{}_{}".format(
+            image_crop.x_min, image_crop.y_min, image_crop.x_max, image_crop.y_max) + ".jpg")
 
 
 def generate_crops2(image_path, max_num_images: int = 500):
