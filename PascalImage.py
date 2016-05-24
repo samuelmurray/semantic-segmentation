@@ -1,14 +1,48 @@
-import BoundingBox
-import ImageCrop
+from BoundingBox import BoundingBox
+from ImageCrop import ImageCrop
+import xmltodict
+
 
 class PascalImage:
 
-    def __init__(self, name: str, bounding_boxes: list):
-        self.name = name
-        self.bounding_boxes = bounding_boxes
+    def __init__(self, image_name: str):
+        self.XML_FOLDER_PATH = 'data/VOC2012/Annotations/%s.xml'
+        self.IMG_FOLDER_PATH = 'data/VOC2012/JPEGImages/%s.jpg'
+        self.name = self.get_image_name(self.IMG_FOLDER_PATH % image_name)
+        self.bounding_boxes = []
+        self.bounding_boxes_of_image(self.IMG_FOLDER_PATH % image_name)
 
-    def add_bounding_box(self, bounding_box: BoundingBox):
-        self.bounding_boxes.append(bounding_box)
+    def get_image_name(self, file_path):
+        start = len(file_path) - file_path[::-1].find("/")
+        end = len(file_path) - file_path[::-1].find(".") - 1
+        return file_path[start:end]
+
+    def xml_to_dict(self, image_path, xml_attribs=True):
+        with open(self.XML_FOLDER_PATH % self.get_image_name(image_path), "rb") as f:  # notice the "rb" mode
+            d = xmltodict.parse(f, xml_attribs=xml_attribs)
+            return d
+
+    def generate_bounding_box(self, data):
+        object_name = data['name']
+        is_difficult = bool(int(data['difficult']))
+        coords = dict([(key, val) for key, val in data['bndbox'].items()])
+        x_min = int(coords['xmin'])
+        x_max = int(coords['xmax'])
+        y_min = int(float(coords['ymin']))  # One rouge image had a float coordinate
+        y_max = int(coords['ymax'])
+        bbox = BoundingBox(object_name, x_min, y_min, x_max, y_max, is_difficult)
+        self.bounding_boxes.append(bbox)
+
+    def bounding_boxes_of_image(self, image_path):
+        data = self.xml_to_dict(image_path)
+
+        data = data['annotation']['object']
+
+        if isinstance(data, dict):
+            self.generate_bounding_box(data)
+        else:
+            for obj in data:
+                self.generate_bounding_box(obj)
 
     def calculate_overlap(self, bbox: BoundingBox, patch: ImageCrop):
         x_overlap = max(0, min(bbox.x_max, patch.x_max) - max(bbox.x_min, patch.x_min))
@@ -48,14 +82,9 @@ class PascalImage:
         if overlap_count > 1:  # For a legal patch it can only overlap one bounding box
             return None, None  # Interpret this as 'delete' the patch
         else:
-            return labels, isDifficult  #
+            return label, isDifficult  #
 
     def __str__(self):
         return "%s: \n\t%s" % (self.name, "\n\t".join([str(bbox) for bbox in self.bounding_boxes]))
 
     __repr__ = __str__
-
-
-
-
-
