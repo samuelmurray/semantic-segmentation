@@ -4,15 +4,16 @@ import xmltodict
 
 
 class PascalImage:
+    XML_FOLDER_PATH = 'data/VOC2012/Annotations/%s.xml'
+    IMG_FOLDER_PATH = 'data/VOC2012/JPEGImages/%s.jpg'
 
-    def __init__(self, image_name: str):
-        self.XML_FOLDER_PATH = 'data/VOC2012/Annotations/%s.xml'
-        self.IMG_FOLDER_PATH = 'data/VOC2012/JPEGImages/%s.jpg'
+    def __init__(self, image_name):
         self.name = self.get_image_name(self.IMG_FOLDER_PATH % image_name)
         self.bounding_boxes = []
         self.bounding_boxes_of_image(self.IMG_FOLDER_PATH % image_name)
 
-    def get_image_name(self, file_path):
+    @staticmethod
+    def get_image_name(file_path):
         start = len(file_path) - file_path[::-1].find("/")
         end = len(file_path) - file_path[::-1].find(".") - 1
         return file_path[start:end]
@@ -44,16 +45,17 @@ class PascalImage:
             for obj in data:
                 self.generate_bounding_box(obj)
 
-    def calculate_overlap(self, bbox: BoundingBox, patch: ImageCrop):
+    @staticmethod
+    def calculate_overlap(bbox: BoundingBox, patch: ImageCrop):
         x_overlap = max(0, min(bbox.x_max, patch.x_max) - max(bbox.x_min, patch.x_min))
         y_overlap = max(0, min(bbox.y_max, patch.y_max) - max(bbox.y_min, patch.y_min))
         return x_overlap * y_overlap
 
-    def is_legal_overlap(self, bbox: BoundingBox, patch: ImageCrop, overlap: int):
+    @staticmethod
+    def is_legal_overlap(bbox: BoundingBox, patch: ImageCrop, overlap: int):
         """
         The overlap is legal if the overlap is at least 20% of the patch area AND 60% of the bounding box area
         """
-        # TODO: Change to instead of returning the name of the object, it returns the ID or one-hot numpy vector
         if (overlap >= 0.2 * patch.area) and overlap >= 0.6 * bbox.area:
             return True
         return False
@@ -69,20 +71,21 @@ class PascalImage:
         # TODO: Change to instead of returning the name of the object, it returns the ID or one-hot numpy vector
         overlap_count = 0
         label = None
-        isDifficult = []
+        is_difficult = None
         for bbox in self.bounding_boxes:
             overlap = self.calculate_overlap(bbox, patch)
             if (overlap > 0) and self.is_legal_overlap(bbox, patch, overlap):
-                if overlap_count == 1:
-                    label = 'delete'
+                if overlap_count >= 1:  # For a legal patch it can only overlap one bounding box
+                    label = 'invalid'
+                    is_difficult = False
                     break
                 overlap_count += 1
                 label = bbox.name
-                isDifficult.append(bbox.is_difficult)
-        if overlap_count > 1:  # For a legal patch it can only overlap one bounding box
-            return None, None  # Interpret this as 'delete' the patch
+                is_difficult = bbox.is_difficult
+        if overlap_count == 0:
+            return 'background', False
         else:
-            return label, isDifficult  #
+            return label, is_difficult
 
     def __str__(self):
         return "%s: \n\t%s" % (self.name, "\n\t".join([str(bbox) for bbox in self.bounding_boxes]))
