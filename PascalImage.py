@@ -1,9 +1,12 @@
-import BoundingBox
-import ImageCrop
+from typing import List
+
+from BoundingBox import BoundingBox
+from ImageCrop import ImageCrop
+
 
 class PascalImage:
 
-    def __init__(self, name: str, bounding_boxes: list):
+    def __init__(self, name: str, bounding_boxes: List[BoundingBox]):
         self.name = name
         self.bounding_boxes = bounding_boxes
 
