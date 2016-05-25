@@ -155,7 +155,7 @@ def run_inference_on_image(image):
     # Creates graph from saved GraphDef.
     create_graph()
     graph = tf.get_default_graph()
-    end_of_graph = graph.get_tensor_by_name('mixed_10/join:0')
+    end_of_graph = graph.get_tensor_by_name('pool3:0')
     with tf.Session() as sess:
         # Some useful tensors:
         # 'softmax:0': A tensor containing the normalized prediction across 1000 labels.
