@@ -8,25 +8,27 @@
 
 import pickle
 import os
+import numpy as np
 
-LABEL_BY_IMAGE_PICKLE = 'data/pickles/label_by_image.p'
-LABEL_DICTIONARY_PICKLE = 'data/pickles/label_dictionary.p'
-TRAINING_IMAGES_PICKLE = 'data/pickles/training_images.p'
-VALIDATION_IMAGES_PICKLE = 'data/pickles/validation_images.p'
+paths = {
+    'label_by_name': 'data/pickles/label_by_name.p',
+    'name_by_label': 'data/pickles/name_by_label.p',
+    'validation_images': 'data/pickles/validation_images.p',
+    'training_images': 'data/pickles/training_images.p',
+    'training_labels': 'data/pickles/training_labels.npy',
+    'validation_labels': 'data/pickles/validation_labels.npy'
+}
 
-if not (os.path.isfile(LABEL_BY_IMAGE_PICKLE) and \
-        os.path.isfile(LABEL_DICTIONARY_PICKLE) and \
-        os.path.isfile(TRAINING_IMAGES_PICKLE) and \
-        os.path.isfile(VALIDATION_IMAGES_PICKLE)):
+
+if not all(os.path.isfile(path) for path in paths.values()):
     print("Generating image labels")
     from save_image_labels import save_labels
     save_labels()
 
 
-label_by_image = pickle.load(open('data/pickles/label_by_image.p', 'rb'))
-label_dictionary = pickle.load(open('data/pickles/label_dictionary.p', 'rb'))
-training_images = pickle.load(open('data/pickles/training_images.p', 'rb'))
-validation_images = pickle.load(open('data/pickles/validation_images.p', 'rb'))
-
-
-
+label_by_name = pickle.load(open(paths['label_by_name'], 'rb'))
+name_by_label = pickle.load(open(paths['name_by_label'], 'rb'))
+validation_images = pickle.load(open(paths['validation_images'], 'rb'))
+training_images = pickle.load(open(paths['training_images'], 'rb'))
+training_labels = np.load(open(paths['training_labels'], 'rb'))
+validation_labels = np.load(open(paths['validation_labels'], 'rb'))
