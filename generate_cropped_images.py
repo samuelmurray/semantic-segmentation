@@ -4,11 +4,12 @@
 # * generate all the crops
 # * check what label each crop should get
 # * save a cropped image with the label in folder images/train or images/validate as:
-#     label_difficult_xmin_xmax_
+#     label_difficult_xmin_ymin_xmax_ymax
 
 from functools import partial
 from multiprocessing.pool import Pool
 from time import time
+from typing import Iterator
 from PIL import Image
 from PascalImage import PascalImage
 from ImageCrop import ImageCrop
@@ -17,7 +18,7 @@ import os
 JPEG_PATH = 'data/VOC2012/JPEGImages/%s.jpg'
 
 
-def generate_crops(image_name, max_num_images: int = 500) -> ImageCrop:
+def generate_crops(image_name, max_num_images: int = 500) -> Iterator[ImageCrop]:
     image = Image.open(JPEG_PATH % image_name)
     lambdas = [1, 1.3, 1.6, 2, 2.4, 2.8, 3.2, 3.6, 4]
     width, height = image.size
@@ -44,7 +45,7 @@ def generate_crops(image_name, max_num_images: int = 500) -> ImageCrop:
                     within_height = False
                 cropped_image = image.crop((x_min, y_min, x_max, y_max))
                 yield ImageCrop(cropped_image, x_min, y_min, x_max, y_max)
-                j += 0.5 # Increase i and j by 0.5 to get 50% overlap between neighbouring crops
+                j += 0.5  # Increase i and j by 0.5 to get 50% overlap between neighbouring crops
                 count += 1
                 if count >= max_num_images:
                     print("The maximum number of images ({}) was generated".format(max_num_images))

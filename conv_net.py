@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-# This file has been modified by Samuel Murray to fit the task.
+# This file has been modified by Samuel Murray to use and modify an existing graph_def.
 
 import os.path
 import sys
@@ -32,7 +32,6 @@ tf.app.flags.DEFINE_string(
     """imagenet_2012_challenge_label_map_proto.pbtxt.""")
 
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
-
 
 NUM_CLASSES = 21
 
@@ -59,8 +58,10 @@ def maybe_download_and_extract():
     tarfile.open(filepath, 'r:gz').extractall(dest_directory)
 
 
-def inference():
+def inference(resized_images):
     """ Build the Pascal model up to where it may be used for inference.
+    Args:
+        resized_images: Input tensor with batch of images of size 299x299x3
     Returns:
         logits: Output tensor with the computed logits.
     """
@@ -79,36 +80,35 @@ def inference():
             FLAGS.model_dir, 'classify_image_graph_def.pb'), 'rb') as f:
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(f.read())
-        _ = tf.import_graph_def(graph_def, name='')
-    graph = tf.get_default_graph()
+        input_map = {'Sub:0': resized_images}
+        _ = tf.import_graph_def(graph_def, name='', input_map=input_map)
+
     # Use the second-last layer
-    pool_tensor = graph.get_tensor_by_name('pool_3:0')
+    pool_tensor = tf.get_default_graph().get_tensor_by_name('pool_3:0')
 
     # First FC layer, known as FCa
     W_FCa = weight_variable([2048, 1024])
     b_FCa = bias_variable([1024])
-
     pool_flat = tf.reshape(pool_tensor, [-1, 2048])
-    h_fc1 = tf.nn.relu(tf.matmul(pool_flat, W_FCa) + b_FCa)
+    h_FCa = tf.nn.relu(tf.matmul(pool_flat, W_FCa) + b_FCa)
 
     # Readout layer, known as FCb
     W_FCb = weight_variable([1024, NUM_CLASSES])
     b_FCb = bias_variable([NUM_CLASSES])
-    logits = tf.matmul(h_fc1, W_FCb) + b_FCb
+    logits = tf.matmul(h_FCa, W_FCb) + b_FCb
     return logits
 
 
 def loss(logits, labels):
     """Calculates the loss from the logits and the labels.
     Args:
-        logits: Logit tensor, float - [batch_size, NUM_CLASSES].
+        logits: Logits tensor, float - [batch_size, NUM_CLASSES].
         labels: Labels tensor, int32 - [batch_size].
     Returns:
         loss: Loss tensor of type float.
     """
     labels = tf.to_int64(labels)
-    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
-        logits, labels, name='xentropy')
+    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, labels, name='xentropy')
     loss = tf.reduce_mean(cross_entropy, name='xentropy_mean')
     return loss
 

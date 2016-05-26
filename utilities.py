@@ -1,5 +1,5 @@
 # Intended to store utilites we will need during our run.
-# At  present those are:
+# At present those are:
 #
 # * label_by_image: Full path to image file -> label of image (e.g. 'airplane')
 # * label_dictionary: label -> one-hot vector
@@ -28,7 +28,7 @@ if not all(os.path.isfile(path) for path in paths.values()):
 
 label_by_name = pickle.load(open(paths['label_by_name'], 'rb'))
 name_by_label = pickle.load(open(paths['name_by_label'], 'rb'))
-validation_images = pickle.load(open(paths['validation_images'], 'rb'))
 training_images = pickle.load(open(paths['training_images'], 'rb'))
 training_labels = np.load(open(paths['training_labels'], 'rb'))
+validation_images = pickle.load(open(paths['validation_images'], 'rb'))
 validation_labels = np.load(open(paths['validation_labels'], 'rb'))
