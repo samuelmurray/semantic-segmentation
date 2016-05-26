@@ -1,3 +1,11 @@
+#
+# This spawns 4 processes that will:
+# * iterate through all PASCAL images
+# * generate all the crops
+# * check what label each crop should get
+# * save a cropped image with the label in folder images/train or images/validate as:
+#     label_difficult_xmin_xmax_
+
 from functools import partial
 from multiprocessing.pool import Pool
 from time import time
@@ -48,7 +56,7 @@ def generate_crops(image_name, max_num_images: int = 500) -> ImageCrop:
 def process_image(image_name, ts, vs,):
     save_location = None
     if image_name in ts:
-        save_location = "images/test/cropped_{}/".format(image_name)
+        save_location = "images/train/cropped_{}/".format(image_name)
     else:
         save_location = "images/validate/cropped_{}/".format(image_name)
 
@@ -59,6 +67,7 @@ def process_image(image_name, ts, vs,):
     for crop in generate_crops(image_name):
         label = pi.calculate_patch_type(crop)
         crop.save(save_location, "%s_%s" % (label[0], label[1]))
+
 
 def main():
     ts = time()
