@@ -3,54 +3,81 @@
 # * images/test
 # * images/validate
 #
-# and generate two dictionaries for lookup:
-#
-# * label_by_image: image name --> label,
-#     * e.g. background_False_87_145_377_435.jpg --> background
-# * label_dictionary: label --> one-hot vector as a numpy array
-#     * e.g. aeroplane --> array([ 1.,  0.,  0.,  0.,  ...     ])
+# and save the files detailed below
+#  * label_by_name: label name --> label number
+#  * name_by_label: label number --> label name
+#  * training_images: list of paths to training images
+#  * validation_images: lists of paths to validation images
+#  * training_labels: numpy vector of float32
+#  * valication_labels: numpy vector of float32
 
 
 import os
 from collections import OrderedDict
 import pickle
 from numpy import zeros
+import numpy as np
 
 
 def save_labels():
-    label_by_image = {}
-    all_labels = set()
-    label_dictionary = OrderedDict()
-    training_images = []
-    validation_images = []
+    label_by_image = {}  # image --> label number   NOT SAVED
+    all_labels = set()  # NOT SAVED
+    one_hot_label_dictionary = OrderedDict()  # label --> one-hot vector  NOT SAVED (currenly not used)
+    label_by_name = {}  # label name --> label number
+    name_by_label = {}  # label number --> label name
+    training_images = []  # list of training image paths
+    validation_images = []  # list of validation image paths
+
 
     # Figure out the mapping between image and label
     for root, dirs, files in os.walk('images/'):
         if len(files) > 1:  # somtimes only .DS file
             # file_names = [name for name in files if (name != '.DS') and ('invalid' not in name)]
             short_file_names = [name for name in files if (name != '.DS') and ('invalid' not in name)]
-            file_names = [os.path.join(root, name) for name in files if (name != '.DS') and ('invalid' not in name)]
+            file_names = [os.path.join(root, name) for name in short_file_names]
             labels = [name[0:name.find('_')] for name in short_file_names]
             label_by_image.update(dict(zip(file_names, labels)))
             all_labels.update(labels)
 
             if 'train' in root:
-                training_images = training_images + [os.path.join(root, name) for name in file_names]
+                training_images = training_images + file_names
             else:
-                validation_images = validation_images + [os.path.join(root, name) for name in file_names]
+                validation_images = validation_images + file_names
 
     # build the label dictionary
     num_labels = len(all_labels)
     for i, label in enumerate(sorted(all_labels)):
         vec = zeros(num_labels)
         vec[i] = 1.0
-        label_dictionary[label] = vec
+        one_hot_label_dictionary[label] = vec
+        label_by_name[label] = i
+        name_by_label[i] = label
+
+    training_labels = np.zeros(len(training_images), dtype=np.float32)
+    for i, image in enumerate(training_images):
+        label = label_by_image[image]
+        training_labels[i] = label_by_name[label]
+
+    validation_labels = np.zeros(len(validation_images), dtype=np.float32)
+    for i, image in enumerate(validation_images):
+        label = label_by_image[image]
+        validation_labels[i] = label_by_name[label]
+
 
     # save everything to disk
-    pickle.dump(label_dictionary, open('data/pickles/label_dictionary.p', 'wb'))
-    pickle.dump(label_by_image, open('data/pickles/label_by_image.p', 'wb'))
+    pickle.dump(label_by_name, open('data/pickles/label_by_name.p', 'wb'))
+    pickle.dump(name_by_label, open('data/pickles/name_by_label.p', 'wb'))
+    #pickle.dump(label_by_image, open('data/pickles/label_by_image.p', 'wb'))
     pickle.dump(validation_images, open('data/pickles/validation_images.p', 'wb'))
     pickle.dump(training_images, open('data/pickles/training_images.p', 'wb'))
+    #pickle.dump(training_labels, open('data/pickles/training_labels.p', 'wb'))
+    #pickle.dump(validation_labels, open('data/pickles/validation_labels.p', 'wb'))
+    #pickle.dump(one_hot_label_dictionary, open('data/pickles/one_hot_label_dictionary.p', 'wb'))
+    np.save(open('data/pickles/training_labels.npy', 'wb'), training_labels)
+    np.save(open('data/pickles/validation_labels.npy', 'wb'), validation_labels)
+
 
 if __name__ == "__main__":
     save_labels()
+
+# images/train/cropped_2007_000032/images/train/cropped_2007_000032/aeroplane_False_0_0_281_281.jpg
