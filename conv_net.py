@@ -88,18 +88,19 @@ def inference(resized_images):
     pool_tensor = tf.get_default_graph().get_tensor_by_name('pool_3:0')
 
     # First FC layer, known as FCa
-    W_FCa = weight_variable([2048, 1024])
-    b_FCa = bias_variable([1024])
-    pool_flat = tf.reshape(pool_tensor, [-1, 2048])
-    h_FCa = tf.nn.relu(tf.matmul(pool_flat, W_FCa) + b_FCa)
+    with tf.name_scope("FCa") as scope:
+        W_FCa = weight_variable([2048, 1024])
+        b_FCa = bias_variable([1024])
+        pool_flat = tf.reshape(pool_tensor, [-1, 2048])
+        h_FCa = tf.nn.relu(tf.matmul(pool_flat, W_FCa) + b_FCa)
 
     # Readout layer, known as FCb
-    W_FCb = weight_variable([1024, NUM_CLASSES])
-    b_FCb = bias_variable([NUM_CLASSES])
+    with tf.name_scope("FCb") as scope:
+        W_FCb = weight_variable([1024, NUM_CLASSES])
+        b_FCb = bias_variable([NUM_CLASSES])
+        logits = tf.matmul(h_FCa, W_FCb) + b_FCb
 
     NEW_VARIABLES.extend([W_FCa, b_FCa, W_FCb, b_FCb])
-
-    logits = tf.matmul(h_FCa, W_FCb) + b_FCb
     return logits
 
 
@@ -111,9 +112,10 @@ def loss(logits, labels):
     Returns:
         loss: Loss tensor of type float.
     """
-    labels = tf.to_int64(labels)
-    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, labels, name='xentropy')
-    loss = tf.reduce_mean(cross_entropy, name='xentropy_mean')
+    with tf.name_scope("Loss") as scope:
+        labels = tf.to_int64(labels)
+        cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, labels, name='xentropy')
+        loss = tf.reduce_mean(cross_entropy, name='xentropy_mean')
     return loss
 
 
@@ -129,15 +131,16 @@ def training(loss, learning_rate):
     Returns:
         train_op: The Op for training.
     """
-    # Add a scalar summary for the snapshot loss.
-    tf.scalar_summary(loss.op.name, loss)
-    # Create the gradient descent optimizer with the given learning rate.
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate)
-    # Create a variable to track the global step.
-    global_step = tf.Variable(0, name='global_step', trainable=False)
-    # Use the optimizer to apply the gradients that minimize the loss
-    # (and also increment the global step counter) as a single training step.
-    train_op = optimizer.minimize(loss, global_step=global_step, var_list=NEW_VARIABLES)
+    with tf.name_scope("Training") as scope:
+        # Add a scalar summary for the snapshot loss.
+        tf.scalar_summary(loss.op.name, loss)
+        # Create the gradient descent optimizer with the given learning rate.
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+        # Create a variable to track the global step.
+        global_step = tf.Variable(0, name='global_step', trainable=False)
+        # Use the optimizer to apply the gradients that minimize the loss
+        # (and also increment the global step counter) as a single training step.
+        train_op = optimizer.minimize(loss, global_step=global_step, var_list=NEW_VARIABLES)
     return train_op
 
 
@@ -154,6 +157,7 @@ def evaluation(logits, labels):
     # It returns a bool tensor with shape [batch_size] that is true for
     # the examples where the label is in the top k (here k=1)
     # of all logits for that example.
-    correct = tf.nn.in_top_k(logits, labels, 1)
-    # Return the number of true entries.
+    with tf.name_scope("Evaluation") as scope:
+        correct = tf.nn.in_top_k(logits, labels, 1)
+        # Return the number of true entries.
     return tf.reduce_sum(tf.cast(correct, tf.int32))

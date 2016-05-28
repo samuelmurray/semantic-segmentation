@@ -16,8 +16,8 @@
 # This file has been modified by Samuel Murray.
 
 import time
-from datetime import datetime
 import os
+from datetime import datetime
 import numpy as np
 import tensorflow as tf
 
@@ -143,9 +143,9 @@ def run_training(training_images, training_labels, validation_images, validation
 
         if step % 100 == 0:
             # Update the events file.
-
             summary_str = sess.run(summary_op, feed_dict=feed_dict)
             summary_writer.add_summary(summary_str, step)
+            print("Summary writer flushed with string {} at step {}".format(summary_str, step))
             summary_writer.flush()
 
         if step % 1000 == 0 or (step + 1) == FLAGS.max_steps:
