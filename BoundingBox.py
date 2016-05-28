@@ -1,7 +1,7 @@
 class BoundingBox:
     __slots__ = ['name', 'x_min', 'y_min', 'x_max', 'y_max', 'is_difficult', 'area']
 
-    def __init__(self, name: str, x_min: int, y_min: int, x_max: int, y_max: int, is_difficult: bool = False):
+    def __init__(self, name, x_min, y_min, x_max, y_max, is_difficult = False):
         self.name = name
         self.x_min = x_min
         self.y_min = y_min
