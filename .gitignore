@@ -1,4 +1,4 @@
-data/*
+data/VOC2012/*
 .idea/*
 images/*
 *.pyc
