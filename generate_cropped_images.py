@@ -24,7 +24,7 @@ import os
 JPEG_PATH = 'data/VOC2012/JPEGImages/%s.jpg'
 
 
-def generate_crops(image_name, max_num_images = 500) -> Iterator[ImageCrop]:
+def generate_crops(image_name, max_num_images = 500):
     image = Image.open(JPEG_PATH % image_name)
     lambdas = [1, 1.3, 1.6, 2, 2.4, 2.8, 3.2, 3.6, 4]
     width, height = image.size
