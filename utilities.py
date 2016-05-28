@@ -6,6 +6,8 @@
 # * training_images: list of full path to training training images
 # * validation_images: list of fll path to validation images
 
+from __future__ import print_function
+from __future__ import division
 import pickle
 import os
 import numpy as np
@@ -19,12 +21,10 @@ paths = {
     'validation_labels': 'data/pickles/validation_labels.npy'
 }
 
-
 if not all(os.path.isfile(path) for path in paths.values()):
     print("Generating image labels")
     from save_image_labels import save_labels
     save_labels()
-
 
 label_by_name = pickle.load(open(paths['label_by_name'], 'rb'))
 name_by_label = pickle.load(open(paths['name_by_label'], 'rb'))

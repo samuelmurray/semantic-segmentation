@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import division
 from PIL import Image
 from crop_util import *
 

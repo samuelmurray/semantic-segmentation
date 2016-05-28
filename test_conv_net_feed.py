@@ -1,5 +1,8 @@
-import conv_net_feed as cnnfeed
+from __future__ import print_function
+from __future__ import division
+
 import numpy as np
+import conv_net_feed as cnnfeed
 import conv_net_util as cnnutil
 
 # Define the data

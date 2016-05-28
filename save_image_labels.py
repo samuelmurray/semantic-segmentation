@@ -11,7 +11,8 @@
 #  * training_labels: numpy vector of float32
 #  * valication_labels: numpy vector of float32
 
-
+from __future__ import print_function
+from __future__ import division
 import os
 from collections import OrderedDict
 import pickle

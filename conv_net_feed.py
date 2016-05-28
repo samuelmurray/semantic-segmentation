@@ -15,6 +15,9 @@
 
 # This file has been modified by Samuel Murray.
 
+from __future__ import print_function
+from __future__ import division
+
 import time
 import os
 from datetime import datetime

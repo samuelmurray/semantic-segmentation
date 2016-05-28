@@ -1,7 +1,10 @@
 #
 # Utility functions needed to use feed the network.
 # At present there are only preprocessing functions, used to process images to the types the network expects
+#
 
+from __future__ import print_function
+from __future__ import division
 
 import tensorflow as tf
 

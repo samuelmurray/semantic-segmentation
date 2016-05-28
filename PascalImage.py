@@ -1,5 +1,7 @@
+from __future__ import print_function
+from __future__ import division
+
 from BoundingBox import BoundingBox
-from ImageCrop import ImageCrop
 import xmltodict
 
 
@@ -46,13 +48,15 @@ class PascalImage:
                 self.generate_bounding_box(obj)
 
     @staticmethod
-    def calculate_overlap(bbox: BoundingBox, patch: ImageCrop):
+    #def calculate_overlap(bbox: BoundingBox, patch: ImageCrop):
+    def calculate_overlap(bbox, patch):
         x_overlap = max(0, min(bbox.x_max, patch.x_max) - max(bbox.x_min, patch.x_min))
         y_overlap = max(0, min(bbox.y_max, patch.y_max) - max(bbox.y_min, patch.y_min))
         return x_overlap * y_overlap
 
     @staticmethod
-    def is_legal_overlap(bbox: BoundingBox, patch: ImageCrop, overlap: int):
+    #def is_legal_overlap(bbox: BoundingBox, patch: ImageCrop, overlap: int):
+    def is_legal_overlap(bbox, patch, overlap):
         """
         The overlap is legal if the overlap is at least 20% of the patch area AND 60% of the bounding box area
         """
@@ -60,7 +64,8 @@ class PascalImage:
             return True
         return False
 
-    def calculate_patch_type(self, patch: ImageCrop):
+    #def calculate_patch_type(self, patch: ImageCrop):
+    def calculate_patch_type(self, patch):
         """
         Iterate through all of the patches for this image and check if the given patch satisfies
         the criteria to be included. If a patch overlaps more than one bounding box then we cannot
