@@ -7,17 +7,22 @@ import conv_net_util as cnnutil
 from utilities import training_images, training_labels, validation_images, validation_labels
 
 # Define the data
+"""
 image = 'imagenet/panda.jpeg'
 image2 = 'imagenet/panda-update.jpg'
 image_names = [image, image2, image]
-batch_size = len(image_names)
+image_labels = np.array([0, 6, 0])  # Make sure to use the same label for identical images
+image_data = cnnutil.preprocess_images(image_names)
+cnnfeed.run_training(image_data, image_labels, image_data, image_lables)
+"""
 
-image_names = training_images[0:100]
-image_labels = training_labels[0:100]
-
+train_names = training_images[0:100]
+train_labels = training_labels[0:100]
+val_names = validation_images[0:10]
+val_labels = validation_labels[0:10]
 
 # Preprocess data
-image_data = cnnutil.preprocess_images(image_names)
-image_labels = np.array([0, 6, 0])  # Make sure to use the same label for identical images
+train_data = cnnutil.preprocess_images(train_names)
+val_data = cnnutil.preprocess_images(val_names)
 
-cnnfeed.run_training(image_data, image_labels, validation_images[0:10], validation_labels[0:10])
+cnnfeed.run_training(train_data, train_labels, val_data, val_labels)
