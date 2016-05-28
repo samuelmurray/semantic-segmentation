@@ -16,19 +16,19 @@
 # This file has been modified by Samuel Murray.
 
 import time
-
+import os
+from datetime import datetime
 import numpy as np
 import tensorflow as tf
 
 import conv_net as cnn
-import logging
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
 flags.DEFINE_integer('max_steps', 5, 'Number of steps to run trainer.')
-flags.DEFINE_integer('batch_size', 64, 'Batch size.')
-flags.DEFINE_string('train_dir', 'tmp', 'train dir')
+flags.DEFINE_integer('batch_size', 1, 'Batch size.')
+flags.DEFINE_string('train_dir', './pascal_train/', 'train dir')
 
 
 def placeholder_inputs(batch_size):
@@ -85,12 +85,16 @@ def do_eval(sess, eval_correct, images, labels, images_placeholder, labels_place
         feed_dict = fill_feed_dict(images, labels, images_placeholder, labels_placeholder)
         true_count += sess.run(eval_correct, feed_dict=feed_dict)
     precision = true_count / num_examples
-    logging.info("bla")
     print('  Num examples: %d  Num correct: %d  Precision @ 1: %0.04f' %
           (num_examples, true_count, precision))
 
 
 def run_training(training_images, training_labels, validation_images, validation_labels):
+
+    # Remove conflicting files and create directories
+    if tf.gfile.Exists(FLAGS.train_dir):
+        tf.gfile.DeleteRecursively(FLAGS.train_dir)
+    tf.gfile.MakeDirs(FLAGS.train_dir)
 
     # Create placeholders
     images_placeholder, labels_placeholder = placeholder_inputs(FLAGS.batch_size)
@@ -110,7 +114,7 @@ def run_training(training_images, training_labels, validation_images, validation
     init = tf.initialize_all_variables()
     sess.run(init)
     # Instantiate a SummaryWriter to output summaries and the Graph.
-    summary_writer = tf.train.SummaryWriter('tmp', sess.graph)
+    summary_writer = tf.train.SummaryWriter(FLAGS.train_dir, sess.graph)
 
     for step in range(FLAGS.max_steps):
         start_time = time.time()
@@ -126,19 +130,28 @@ def run_training(training_images, training_labels, validation_images, validation
         # in the list passed to sess.run() and the value tensors will be
         # returned in the tuple from the call.
         _, loss_value = sess.run([train_op, loss], feed_dict=feed_dict)
-
         duration = time.time() - start_time
+        assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
         # Write the summaries and print an overview fairly often.
-        if step % 1 == 0:
+        if step % 10 == 0:
             # Print status to stdout.
-            print('Step %d: loss = %.2f (%.3f sec)' % (step, loss_value, duration))
+            num_examples_per_step = FLAGS.batch_size
+            examples_per_sec = num_examples_per_step / duration
+            sec_per_batch = float(duration)
+            print('%s: Step %d: loss = %.2f (%.1f examples/sec; %.3f sec/batch)'
+                  % (datetime.now(), step, loss_value, examples_per_sec, sec_per_batch))
+
+        if step % 100 == 0:
             # Update the events file.
             summary_str = sess.run(summary_op, feed_dict=feed_dict)
             summary_writer.add_summary(summary_str, step)
+            print("Summary writer flushed with string {} at step {}".format(summary_str, step))
             summary_writer.flush()
 
-        if (step + 1) % 1000 == 0 or (step + 1) == FLAGS.max_steps:
-            saver.save(sess, FLAGS.train_dir, global_step=step)
+        if step % 1000 == 0 or (step + 1) == FLAGS.max_steps:
+            checkpoint_path = os.path.join(FLAGS.train_dir, 'model.ckpt')
+            saver.save(sess, checkpoint_path, global_step=step)
+            print("Model saved in file: {}".format(checkpoint_path))
             # Evaluate against the training set.
             print('Training Data Eval:')
             do_eval(sess, eval_correct, training_images, training_labels, images_placeholder, labels_placeholder)
