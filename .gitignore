@@ -3,3 +3,6 @@ data/*
 images/*
 *.pyc
 *.ipynb
+tmp/*
+checkpoint
+kristo_test.py
