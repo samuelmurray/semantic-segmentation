@@ -1,3 +1,5 @@
+from __future__ import division
+
 class ImageCrop:
     """
     Represents a crop of an image, with stored values of the coordinates in the original image.
@@ -5,7 +7,7 @@ class ImageCrop:
     """
     __slots__ = ['image', 'x_min', 'y_min', 'x_max', 'y_max', 'area']
 
-    def __init__(self, image, x_min: int, y_min: int, x_max: int, y_max: int):
+    def __init__(self, image, x_min, y_min, x_max, y_max):
         self.image = image
         self.x_min = x_min  # type: int
         self.y_min = y_min  # type: int

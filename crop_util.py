@@ -1,10 +1,13 @@
 # Code to generate and optionally save crops of images
 
+from __future__ import print_function
+from __future__ import division
 from typing import Iterator
 from ImageCrop import ImageCrop
 
 
-def generate_crops(image, max_num_images: int = 500) -> Iterator[ImageCrop]:
+
+def generate_crops(image, max_num_images = 500) -> Iterator[ImageCrop]:
     lambdas = [1, 1.3, 1.6, 2, 2.4, 2.8, 3.2, 3.6, 4]
     width, height = image.size
     count = 0
@@ -39,7 +42,7 @@ def generate_crops(image, max_num_images: int = 500) -> Iterator[ImageCrop]:
     print("{} images were generated and saved".format(count))
 
 
-def generate_and_save_crops(image, image_name: str, save_location: str = None, max_num_images: int = 500):
+def generate_and_save_crops(image, image_name, save_location = None, max_num_images = 500):
     import os
     if save_location is None:
         save_location = "images/cropped_{}/".format(image_name)
