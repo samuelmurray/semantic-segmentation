@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # The job name is used to determine the name of job output and error files
-#SBATCH -J exp2.DD2427
+#SBATCH -J kristoTest
 
 # Set the time allocation to be charged
-#SBATCH -A edu16.SF2568
+#SBATCH -A edu16.DD2427
 
 # Request a mail when the job starts and ends
 #SBATCH --mail-type=ALL
