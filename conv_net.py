@@ -34,6 +34,7 @@ tf.app.flags.DEFINE_string(
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
 
 NUM_CLASSES = 21
+NEW_VARIABLES = []
 
 
 def maybe_download_and_extract():
@@ -95,6 +96,9 @@ def inference(resized_images):
     # Readout layer, known as FCb
     W_FCb = weight_variable([1024, NUM_CLASSES])
     b_FCb = bias_variable([NUM_CLASSES])
+
+    NEW_VARIABLES.extend([W_FCa, b_FCa, W_FCb, b_FCb])
+
     logits = tf.matmul(h_FCa, W_FCb) + b_FCb
     return logits
 
@@ -133,7 +137,7 @@ def training(loss, learning_rate):
     global_step = tf.Variable(0, name='global_step', trainable=False)
     # Use the optimizer to apply the gradients that minimize the loss
     # (and also increment the global step counter) as a single training step.
-    train_op = optimizer.minimize(loss, global_step=global_step)
+    train_op = optimizer.minimize(loss, global_step=global_step, var_list=NEW_VARIABLES)
     return train_op
 
 
