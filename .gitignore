@@ -6,4 +6,5 @@ images/*
 tmp/*
 checkpoint
 pascal_train/*
+tmp*
 kristo_test.py
