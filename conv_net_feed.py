@@ -29,8 +29,8 @@ import conv_net as cnn
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
-flags.DEFINE_integer('max_steps', 5, 'Number of steps to run trainer.')
-flags.DEFINE_integer('batch_size', 1, 'Batch size.')
+flags.DEFINE_integer('max_steps', 3200, 'Number of steps to run trainer.')
+flags.DEFINE_integer('batch_size', 32, 'Batch size.')
 flags.DEFINE_string('train_dir', './pascal_train/', 'train dir')
 
 
