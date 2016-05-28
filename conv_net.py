@@ -14,6 +14,8 @@
 # ==============================================================================
 
 # This file has been modified by Samuel Murray to use and modify an existing graph_def.
+from __future__ import division
+from __future__ import print_function
 
 import os.path
 import sys

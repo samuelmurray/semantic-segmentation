@@ -5,4 +5,5 @@ images/*
 *.ipynb
 tmp/*
 checkpoint
+pascal_train/*
 kristo_test.py
