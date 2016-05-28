@@ -5,9 +5,6 @@
 # * check what label each crop should get
 # * save a cropped image with the label in folder images/train or images/validate as:
 #     label_difficult_xmin_ymin_xmax_ymax
-from __future__ import division
-from __future__ import print_function
-
 
 from __future__ import print_function
 from __future__ import division
