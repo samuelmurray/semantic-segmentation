@@ -34,8 +34,6 @@ def save_labels():
     training_images_small = []  # skip background and hard
     validation_images_small = [] # skip background and hard
 
-
-
     # Figure out the mapping between image and label
     for root, dirs, files in os.walk('images/'):
         if len(files) > 1:  # somtimes only .DS file

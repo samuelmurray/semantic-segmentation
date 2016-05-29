@@ -25,13 +25,12 @@ import numpy as np
 import tensorflow as tf
 
 import conv_net as cnn
-import conv_net_util as cnnutil
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
-flags.DEFINE_integer('max_steps', 3200, 'Number of steps to run trainer.')
-flags.DEFINE_integer('batch_size', 32, 'Batch size.')
+flags.DEFINE_integer('max_steps', 500, 'Number of steps to run trainer.')
+flags.DEFINE_integer('batch_size', 16, 'Batch size.')
 flags.DEFINE_string('train_dir', './pascal_train/', 'train dir')
 flags.DEFINE_string('prep_train_dir', './preprocessed/training/', 'preprocessed training images')
 flags.DEFINE_string('prep_val_dir', './preprocessed/validation/', 'preprocessed validation images')
@@ -61,6 +60,16 @@ def sample_images_and_labels(images, labels, batch_size):
     size = len(labels)
     indices = np.random.choice(range(size), batch_size, replace=False)
     return images[indices], labels[indices]
+
+    """
+    ret_images = []
+    for i in range(6, 6+16):
+        ret_images.append(np.load(open('data/preprocessed/training/{}.npy'.format(i), 'rb')))
+    ret_images = np.stack(ret_images)
+    ret_labels = np.random.randint(0, 21, ret_images.shape[0])
+
+    return ret_images, ret_labels
+    """
 
 
 def fill_feed_dict(images, labels, images_placeholder, labels_placeholder, batch_size=FLAGS.batch_size):
@@ -95,22 +104,19 @@ def do_eval(sess, eval_correct, images, labels, images_placeholder, labels_place
           (num_examples, true_count, precision))
 
 
-def save_image_output(images, **kwargs):
-
+def save_image_output(images, image_type):
+    """
+    Iterate trough each training and validation image, send it through the pretrained model, and save the output
+    :param images: list of training image paths
+    :param image_type: should be 'training' or 'validation'
+    """
     def get_file_name(file_path):
         # images/train/cropped_2007_000032/aeroplane_False_0_0_281_281.jpg
         return file_path[file_path.find("_")+1:-4].replace("/", "_") + ".npy"
 
-    type = kwargs['image_type']
-    if type != "training" and type != "validation":
+    if image_type != "training" and image_type != "validation":
         print("Wrong kwargs!")
         return
-    print(images)
-    """
-    Iterate trough each training and validation image, send it through the pretrained model, and save the output
-    :param training_images: list of training image paths
-    :param validation_images: list of validation image paths
-    """
     if not tf.gfile.Exists(FLAGS.prep_train_dir):
         tf.gfile.MakeDirs(FLAGS.prep_train_dir)
     if not tf.gfile.Exists(FLAGS.prep_val_dir):
@@ -133,10 +139,6 @@ def save_image_output(images, **kwargs):
         print("full save path ", full_save_path)
         np.save(open(full_save_path, 'wb'), reshaped_value)
         print(reshaped_value.shape)
-
-
-
-
 
 
 def run_training(training_images, training_labels, validation_images, validation_labels):

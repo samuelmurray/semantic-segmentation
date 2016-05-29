@@ -10,4 +10,6 @@ tmp*
 data/preprocessed/*
 kristo_test.py
 
-data/preprocessed/training/*.npy
+data/preprocessed/training/0.npy
+
+data/preprocessed/training/1.npy

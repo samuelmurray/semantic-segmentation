@@ -36,7 +36,7 @@ tf.app.flags.DEFINE_string(
 DATA_URL = 'http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz'
 
 NUM_CLASSES = 21
-NEW_VARIABLES = []
+TRAINABLE_VARIABLES = []
 
 
 def maybe_download_and_extract():
@@ -82,7 +82,33 @@ def inference_to_save():
     return pool_tensor
 
 
-def inference(resized_images):
+def inference(images_data):
+    def weight_variable(shape):
+        initial = tf.truncated_normal(shape, stddev=0.1)
+        return tf.Variable(initial)
+
+    def bias_variable(shape):
+        initial = tf.constant(0.1, shape=shape)
+        return tf.Variable(initial)
+
+    # First FC layer, known as FCa
+    with tf.name_scope("FCa") as scope:
+        W_FCa = weight_variable([2048, 1024])
+        b_FCa = bias_variable([1024])
+        #pool_flat = tf.reshape(images_data, [-1, 2048])
+        h_FCa = tf.nn.relu(tf.matmul(images_data, W_FCa) + b_FCa)
+
+    # Readout layer, known as FCb
+    with tf.name_scope("FCb") as scope:
+        W_FCb = weight_variable([1024, NUM_CLASSES])
+        b_FCb = bias_variable([NUM_CLASSES])
+        logits = tf.matmul(h_FCa, W_FCb) + b_FCb
+
+    TRAINABLE_VARIABLES.extend([W_FCa, b_FCa, W_FCb, b_FCb])
+    return logits
+
+
+def old_inference(resized_images):
     """ Build the Pascal model up to where it may be used for inference.
     Args:
         resized_images: Input tensor with batch of images of size 299x299x3
@@ -123,7 +149,7 @@ def inference(resized_images):
         b_FCb = bias_variable([NUM_CLASSES])
         logits = tf.matmul(h_FCa, W_FCb) + b_FCb
 
-    NEW_VARIABLES.extend([W_FCa, b_FCa, W_FCb, b_FCb])
+    TRAINABLE_VARIABLES.extend([W_FCa, b_FCa, W_FCb, b_FCb])
     return logits
 
 
@@ -163,7 +189,7 @@ def training(loss, learning_rate):
         global_step = tf.Variable(0, name='global_step', trainable=False)
         # Use the optimizer to apply the gradients that minimize the loss
         # (and also increment the global step counter) as a single training step.
-        train_op = optimizer.minimize(loss, global_step=global_step, var_list=NEW_VARIABLES)
+        train_op = optimizer.minimize(loss, global_step=global_step, var_list=TRAINABLE_VARIABLES)
     return train_op
 
 
