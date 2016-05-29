@@ -104,14 +104,14 @@ def do_eval(sess, eval_correct, images, labels, images_placeholder, labels_place
           (num_examples, true_count, precision))
 
 
-def save_image_output(images, **kwargs):
+def save_image_output(images, image_type):
     """
     Iterate trough each training and validation image, send it through the pretrained model, and save the output
     :param images: list of training image paths
     :param image_type: should be 'training' or 'validation'
     """
-    type = kwargs['image_type']
-    if type != "training" and type != "validation":
+
+    if image_type != "training" and image_type != "validation":
         print("Wrong kwargs!")
         return
     if not tf.gfile.Exists(FLAGS.prep_train_dir):

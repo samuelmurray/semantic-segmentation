@@ -1,6 +1,7 @@
 from __future__ import print_function
 from __future__ import division
 
+import os
 import pickle
 import numpy as np
 import time
@@ -18,23 +19,39 @@ image_labels = np.array([0, 6, 0])  # Make sure to use the same label for identi
 image_data = cnnutil.preprocess_images(image_names)
 cnnfeed.run_training(image_data, image_labels, image_data, image_labels)
 """
-how_many_train = 100  # set to large number to take all
-how_many_val = 0  # set to large number to take all
 
 start_time = time.time()
 
 
-images = []
-for i in range(6, 34):
-    images.append(np.load(open('data/preprocessed/training/{}.npy'.format(i), 'rb')))
-images = np.stack(images)
-labels = np.random.randint(0, 21, images.shape[0])
-print(labels)
-cnnfeed.run_training(images, labels, images, labels)
+def get_images_and_label(image_type):
+    if image_type != 'training' and image_type != 'validation':
+        print("Wrong image_type argument. Got \'{}\', expected \'training\' or \'validation\'".format(image_type))
+        return
+    data_dir = 'data/preprocessed/{}/'.format(image_type)
+    num_classes = 21
+    images = []
+    labels = []
+    for file in os.listdir(data_dir):
+        if file.endswith(".npy"):
+            split_name = file.split('_')
+            if len(split_name) < 2:
+                continue
+            images.append(np.load(open(data_dir + file, 'rb')))
+            labels.append(split_name[2])
+    images = np.stack(images)
+    labels = np.random.randint(0, num_classes, images.shape[0])
+    return images, labels
 
-print("Training on images took {}s".format(time.time() - start_time))
+
+train_images, train_labels = get_images_and_label('training')
+val_images, val_labels = get_images_and_label('validation')
+
+cnnfeed.run_training(train_images, train_labels, val_images, val_labels)
+
 
 """
+how_many_train = 100  # set to large number to take all
+how_many_val = 0  # set to large number to take all
 train_names = training_images[0:how_many_train]
 train_labels = training_labels[0:how_many_train]
 val_names = validation_images[0:how_many_val]
