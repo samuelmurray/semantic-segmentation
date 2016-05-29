@@ -40,6 +40,7 @@ def get_images_and_label(image_type):
             images.append(np.load(open(data_dir + file, 'rb')))
             label = utilities.label_by_name[split_name[2]]
             labels.append(label)
+    labels = np.array(labels)
     images = np.stack(images)
     return images, labels
 
