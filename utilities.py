@@ -18,7 +18,11 @@ paths = {
     'validation_images': 'data/pickles/validation_images.p',
     'training_images': 'data/pickles/training_images.p',
     'training_labels': 'data/pickles/training_labels.npy',
-    'validation_labels': 'data/pickles/validation_labels.npy'
+    'validation_labels': 'data/pickles/validation_labels.npy',
+    'validation_images_small': 'data/pickles/validation_images_small.p',
+    'training_images_small': 'data/pickles/training_images_small.p',
+    'training_labels_small': 'data/pickles/training_labels_small.npy',
+    'validation_labels_small': 'data/pickles/validation_labels_small.npy'
 }
 
 if not all(os.path.isfile(path) for path in paths.values()):
@@ -32,3 +36,9 @@ training_images = pickle.load(open(paths['training_images'], 'rb'))
 training_labels = np.load(open(paths['training_labels'], 'rb'))
 validation_images = pickle.load(open(paths['validation_images'], 'rb'))
 validation_labels = np.load(open(paths['validation_labels'], 'rb'))
+
+training_images_small = pickle.load(open(paths['training_images_small'], 'rb'))
+training_labels_small = np.load(open(paths['training_labels_small'], 'rb'))
+validation_images_small = pickle.load(open(paths['validation_images_small'], 'rb'))
+validation_labels_small = np.load(open(paths['validation_labels_small'], 'rb'))
+

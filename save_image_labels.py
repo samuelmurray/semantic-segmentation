@@ -28,6 +28,9 @@ def save_labels():
     name_by_label = {}  # label number --> label name
     training_images = []  # list of training image paths
     validation_images = []  # list of validation image paths
+    training_images_small = []  # skip background and hard
+    validation_images_small = [] # skip background and hard
+
 
 
     # Figure out the mapping between image and label
@@ -42,8 +45,14 @@ def save_labels():
 
             if 'train' in root:
                 training_images = training_images + file_names
+                for image in file_names:
+                    if not ("background" in image or "_yes_" in image):  # skip background and difficult
+                        training_images_small.append(image)
             else:
                 validation_images = validation_images + file_names
+                for image in file_names:
+                    if not ("background" in image or "_yes_" in image):  # skip background and difficult
+                        validation_images_small.append(image)
 
     # build the label dictionary
     num_labels = len(all_labels)
@@ -64,7 +73,6 @@ def save_labels():
         label = label_by_image[image]
         validation_labels[i] = label_by_name[label]
 
-
     # save everything to disk
     pickle.dump(label_by_name, open('data/pickles/label_by_name.p', 'wb'))
     pickle.dump(name_by_label, open('data/pickles/name_by_label.p', 'wb'))
@@ -76,6 +84,31 @@ def save_labels():
     #pickle.dump(one_hot_label_dictionary, open('data/pickles/one_hot_label_dictionary.p', 'wb'))
     np.save(open('data/pickles/training_labels.npy', 'wb'), training_labels)
     np.save(open('data/pickles/validation_labels.npy', 'wb'), validation_labels)
+
+    # no background or hard images
+    # build the label dictionary
+    all_labels_small = all_labels.copy()
+    all_labels_small.remove('background')
+    label_by_name_small = {}
+    name_by_label_small = {}
+    for i, label in enumerate(sorted(all_labels_small)):
+        label_by_name_small[label] = i
+        name_by_label_small[i] = label
+
+    training_labels_small = np.zeros(len(training_images_small), dtype=np.float32)
+    for i, image in enumerate(training_images_small):
+        label = label_by_image[image]
+        training_labels_small[i] = label_by_name_small[label]
+
+    validation_labels_small = np.zeros(len(validation_images_small), dtype=np.float32)
+    for i, image in enumerate(validation_images_small):
+        label = label_by_image[image]
+        validation_labels_small[i] = label_by_name_small[label]
+
+    pickle.dump(validation_images_small, open('data/pickles/validation_images_small.p', 'wb'))
+    pickle.dump(training_images_small, open('data/pickles/training_images_small.p', 'wb'))
+    np.save(open('data/pickles/training_labels_small.npy', 'wb'), training_labels_small)
+    np.save(open('data/pickles/validation_labels_small.npy', 'wb'), validation_labels_small)
 
 
 if __name__ == "__main__":
