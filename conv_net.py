@@ -61,22 +61,14 @@ def maybe_download_and_extract():
     tarfile.open(filepath, 'r:gz').extractall(dest_directory)
 
 
-<<<<<<< Updated upstream
 def inference_to_save():
     """ Build the Pascal model up to where it may be used for inference.
     Args:
         resized_images: Input tensor with batch of images of size 299x299x3
-=======
-def inference(images_data):
-    """ Build the Pascal model up to where it may be used for inference.
-    Args:
-        images_data: Input tensor of size [BATCH_SIZE] * 2048
->>>>>>> Stashed changes
     Returns:
         logits: Output tensor with the computed logits.
     """
 
-<<<<<<< Updated upstream
     # Creates graph from saved graph_def.pb.
     maybe_download_and_extract()
     with tf.gfile.FastGFile(os.path.join(
@@ -90,8 +82,7 @@ def inference(images_data):
     return pool_tensor
 
 
-def inference(resized_images):
-=======
+def inference(images_data):
     def weight_variable(shape):
         initial = tf.truncated_normal(shape, stddev=0.1)
         return tf.Variable(initial)
@@ -118,7 +109,6 @@ def inference(resized_images):
 
 
 def old_inference(resized_images):
->>>>>>> Stashed changes
     """ Build the Pascal model up to where it may be used for inference.
     Args:
         resized_images: Input tensor with batch of images of size 299x299x3
