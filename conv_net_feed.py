@@ -30,7 +30,7 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
 flags.DEFINE_integer('max_steps', 500, 'Number of steps to run trainer.')
-flags.DEFINE_integer('batch_size', 16, 'Batch size.')
+flags.DEFINE_integer('batch_size', 32, 'Batch size.')
 flags.DEFINE_string('train_dir', './pascal_train/', 'train dir')
 flags.DEFINE_string('prep_train_dir', './preprocessed/training/', 'preprocessed training images')
 flags.DEFINE_string('prep_val_dir', './preprocessed/validation/', 'preprocessed validation images')
@@ -61,16 +61,6 @@ def sample_images_and_labels(images, labels, batch_size):
     indices = np.random.choice(range(size), batch_size, replace=False)
     return images[indices], labels[indices]
 
-    """
-    ret_images = []
-    for i in range(6, 6+16):
-        ret_images.append(np.load(open('data/preprocessed/training/{}.npy'.format(i), 'rb')))
-    ret_images = np.stack(ret_images)
-    ret_labels = np.random.randint(0, 21, ret_images.shape[0])
-
-    return ret_images, ret_labels
-    """
-
 
 def fill_feed_dict(images, labels, images_placeholder, labels_placeholder, batch_size=FLAGS.batch_size):
     """Fills the feed_dict for training the given step.
@@ -96,8 +86,12 @@ def do_eval(sess, eval_correct, images, labels, images_placeholder, labels_place
     true_count = 0  # Counts the number of correct predictions.
     num_examples = len(labels)
     steps_per_epoch = num_examples // FLAGS.batch_size
-    for step in range(steps_per_epoch):
-        feed_dict = fill_feed_dict(images, labels, images_placeholder, labels_placeholder)
+    for step in range(steps_per_epoch - 1):
+        feed_dict = {
+            images_placeholder: images[(step * FLAGS.batch_size):((step + 1) * FLAGS.batch_size)],
+            labels_placeholder: labels[(step * FLAGS.batch_size):((step + 1) * FLAGS.batch_size)],
+        }
+        #feed_dict = fill_feed_dict(images, labels, images_placeholder, labels_placeholder)
         true_count += sess.run(eval_correct, feed_dict=feed_dict)
     precision = true_count / num_examples
     print('  Num examples: %d  Num correct: %d  Precision @ 1: %0.04f' %
