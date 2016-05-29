@@ -4,13 +4,13 @@
 #SBATCH -J kristoTest
 
 # Set the time allocation to be charged
-#SBATCH -A edu16.2427
+#SBATCH -A edu16.DD2427
 
 # Request a mail when the job starts and ends
 #SBATCH --mail-type=ALL
 
 # Maximum job elapsed time should be indicated whenever possible
-#SBATCH -t 13:00:00
+#SBATCH -t 03:00:00
 
 # Number of nodes that will be reserved for a given job
 #SBATCH --nodes=1
