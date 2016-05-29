@@ -128,7 +128,7 @@ def save_image_output(images, image_type):
         reshaped_value = np.squeeze(precomputed_value)
         save_path = 'data/preprocessed/{}/'.format(image_type)
         if not os.path.exists(save_path):
-            os.makedirs(save_path.format(image_type))
+            os.makedirs(save_path)
         full_save_path = '{}{}'.format(save_path, get_file_name(image))
         print("full save path ", full_save_path)
         np.save(open(full_save_path, 'wb'), reshaped_value)
