@@ -33,12 +33,15 @@ if not all(os.path.isfile(path) for path in paths.values()):
 label_by_name = pickle.load(open(paths['label_by_name'], 'rb'))
 name_by_label = pickle.load(open(paths['name_by_label'], 'rb'))
 training_images = pickle.load(open(paths['training_images'], 'rb'))
-training_labels = np.load(open(paths['training_labels'], 'rb'))
+# training_labels = np.load(open(paths['training_labels'], 'rb'))
 validation_images = pickle.load(open(paths['validation_images'], 'rb'))
-validation_labels = np.load(open(paths['validation_labels'], 'rb'))
+# validation_labels = np.load(open(paths['validation_labels'], 'rb'))
+#
+# training_images_small = pickle.load(open(paths['training_images_small'], 'rb'))
+# training_labels_small = np.load(open(paths['training_labels_small'], 'rb'))
+# validation_images_small = pickle.load(open(paths['validation_images_small'], 'rb'))
+# validation_labels_small = np.load(open(paths['validation_labels_small'], 'rb'))
 
-training_images_small = pickle.load(open(paths['training_images_small'], 'rb'))
-training_labels_small = np.load(open(paths['training_labels_small'], 'rb'))
-validation_images_small = pickle.load(open(paths['validation_images_small'], 'rb'))
-validation_labels_small = np.load(open(paths['validation_labels_small'], 'rb'))
+train_images_by_label = pickle.load(open('data/pickles/train_images_by_label.p', 'rb'))
+val_images_by_label = pickle.load(open('data/pickles/val_images_by_label.p', 'rb'))
 

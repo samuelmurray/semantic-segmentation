@@ -18,10 +18,13 @@ from collections import OrderedDict
 import pickle
 from numpy import zeros
 import numpy as np
+from collections import defaultdict
 
 
 def save_labels():
     label_by_image = {}  # image --> label number   NOT SAVED
+    val_images_by_label = defaultdict(list)  # label --> [image, image, ...]
+    train_images_by_label = defaultdict(list)  # label --> [image, image, ...]
     all_labels = set()  # NOT SAVED
     one_hot_label_dictionary = OrderedDict()  # label --> one-hot vector  NOT SAVED (currenly not used)
     label_by_name = {}  # label name --> label number
@@ -40,6 +43,14 @@ def save_labels():
             labels = [name[0:name.find('_')] for name in short_file_names]
             label_by_image.update(dict(zip(file_names, labels)))
             all_labels.update(labels)
+
+            for i, image in enumerate(file_names):
+                label = labels[i]
+                if 'train' in root:
+                    train_images_by_label[label].append(image)
+                else:
+                    val_images_by_label[label].append(image)
+
 
             if 'train' in root:
                 training_images = training_images + file_names
@@ -83,30 +94,33 @@ def save_labels():
     np.save(open('data/pickles/training_labels.npy', 'wb'), training_labels)
     np.save(open('data/pickles/validation_labels.npy', 'wb'), validation_labels)
 
-    # no background or hard images
-    # build the label dictionary
-    all_labels_small = all_labels.copy()
-    all_labels_small.remove('background')
-    label_by_name_small = {}
-    name_by_label_small = {}
-    for i, label in enumerate(sorted(all_labels_small)):
-        label_by_name_small[label] = i
-        name_by_label_small[i] = label
+    pickle.dump(train_images_by_label, open('data/pickles/train_images_by_label.p', 'wb'))
+    pickle.dump(val_images_by_label, open('data/pickles/val_images_by_label.p', 'wb'))
 
-    training_labels_small = np.zeros(len(training_images_small), dtype=np.float32)
-    for i, image in enumerate(training_images_small):
-        label = label_by_image[image]
-        training_labels_small[i] = label_by_name_small[label]
-
-    validation_labels_small = np.zeros(len(validation_images_small), dtype=np.float32)
-    for i, image in enumerate(validation_images_small):
-        label = label_by_image[image]
-        validation_labels_small[i] = label_by_name_small[label]
-
-    pickle.dump(validation_images_small, open('data/pickles/validation_images_small.p', 'wb'))
-    pickle.dump(training_images_small, open('data/pickles/training_images_small.p', 'wb'))
-    np.save(open('data/pickles/training_labels_small.npy', 'wb'), training_labels_small)
-    np.save(open('data/pickles/validation_labels_small.npy', 'wb'), validation_labels_small)
+    # # no background or hard images
+    # # build the label dictionary
+    # all_labels_small = all_labels.copy()
+    # all_labels_small.remove('background')
+    # label_by_name_small = {}
+    # name_by_label_small = {}
+    # for i, label in enumerate(sorted(all_labels_small)):
+    #     label_by_name_small[label] = i
+    #     name_by_label_small[i] = label
+    #
+    # training_labels_small = np.zeros(len(training_images_small), dtype=np.float32)
+    # for i, image in enumerate(training_images_small):
+    #     label = label_by_image[image]
+    #     training_labels_small[i] = label_by_name_small[label]
+    #
+    # validation_labels_small = np.zeros(len(validation_images_small), dtype=np.float32)
+    # for i, image in enumerate(validation_images_small):
+    #     label = label_by_image[image]
+    #     validation_labels_small[i] = label_by_name_small[label]
+    #
+    # pickle.dump(validation_images_small, open('data/pickles/validation_images_small.p', 'wb'))
+    # pickle.dump(training_images_small, open('data/pickles/training_images_small.p', 'wb'))
+    # np.save(open('data/pickles/training_labels_small.npy', 'wb'), training_labels_small)
+    # np.save(open('data/pickles/validation_labels_small.npy', 'wb'), validation_labels_small)
 
 
 if __name__ == "__main__":
