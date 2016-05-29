@@ -7,7 +7,8 @@ import numpy as np
 import time
 import conv_net_feed as cnnfeed
 import conv_net_util as cnnutil
-from utilities import training_images, training_labels, validation_images, validation_labels
+import utilities
+#from utilities import training_images, training_labels, validation_images, validation_labels
 # from utilities import training_images_small, training_labels_small, validation_images_small, validation_labels_small
 
 # Define the data
@@ -20,26 +21,26 @@ image_data = cnnutil.preprocess_images(image_names)
 cnnfeed.run_training(image_data, image_labels, image_data, image_labels)
 """
 
-start_time = time.time()
-
 
 def get_images_and_label(image_type):
     if image_type != 'training' and image_type != 'validation':
         print("Wrong image_type argument. Got \'{}\', expected \'training\' or \'validation\'".format(image_type))
         return
     data_dir = 'data/preprocessed/{}/'.format(image_type)
-    num_classes = 21
+
     images = []
     labels = []
-    for file in os.listdir(data_dir):
+    for i, file in enumerate(os.listdir(data_dir)):
+        if i % 100 == 0:
+            print("Loaded {} of the {} images".format(i, image_type))
         if file.endswith(".npy"):
             split_name = file.split('_')
             if len(split_name) < 2:
                 continue
             images.append(np.load(open(data_dir + file, 'rb')))
-            labels.append(split_name[2])
+            label = utilities.label_by_name[split_name[2]]
+            labels.append(label)
     images = np.stack(images)
-    labels = np.random.randint(0, num_classes, images.shape[0])
     return images, labels
 
 
