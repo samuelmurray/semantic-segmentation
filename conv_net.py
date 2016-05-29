@@ -61,6 +61,27 @@ def maybe_download_and_extract():
     tarfile.open(filepath, 'r:gz').extractall(dest_directory)
 
 
+def inference_to_save():
+    """ Build the Pascal model up to where it may be used for inference.
+    Args:
+        resized_images: Input tensor with batch of images of size 299x299x3
+    Returns:
+        logits: Output tensor with the computed logits.
+    """
+
+    # Creates graph from saved graph_def.pb.
+    maybe_download_and_extract()
+    with tf.gfile.FastGFile(os.path.join(
+            FLAGS.model_dir, 'classify_image_graph_def.pb'), 'rb') as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+        _ = tf.import_graph_def(graph_def, name='')
+
+    # Use the second-last layer
+    pool_tensor = tf.get_default_graph().get_tensor_by_name('pool_3:0')
+    return pool_tensor
+
+
 def inference(resized_images):
     """ Build the Pascal model up to where it may be used for inference.
     Args:
