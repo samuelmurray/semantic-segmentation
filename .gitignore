@@ -7,4 +7,7 @@ tmp/*
 checkpoint
 pascal_train/*
 tmp*
+data/preprocessed/*
 kristo_test.py
+
+data/preprocessed/training/*.npy
