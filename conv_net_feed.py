@@ -132,9 +132,9 @@ def save_image_output(images, image_type):
         image_data = tf.gfile.FastGFile(image, 'rb').read()
         precomputed_value = sess.run(output, {'DecodeJpeg/contents:0': image_data})
         reshaped_value = np.squeeze(precomputed_value)
-        save_path = 'data/preprocessed/{}/'.format(type)
+        save_path = 'data/preprocessed/{}/'.format(image_type)
         if not os.path.exists(save_path):
-            os.makedirs(save_path.format(type))
+            os.makedirs(save_path.format(image_type))
         full_save_path = '{}{}'.format(save_path, get_file_name(image))
         print("full save path ", full_save_path)
         np.save(open(full_save_path, 'wb'), reshaped_value)
