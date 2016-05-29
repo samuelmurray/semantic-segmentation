@@ -96,6 +96,11 @@ def do_eval(sess, eval_correct, images, labels, images_placeholder, labels_place
 
 
 def save_image_output(images, **kwargs):
+
+    def get_file_name(file_path):
+        # images/train/cropped_2007_000032/aeroplane_False_0_0_281_281.jpg
+        return file_path[file_path.find("_")+1:-4].replace("/", "_") + ".npy"
+
     type = kwargs['image_type']
     if type != "training" and type != "validation":
         print("Wrong kwargs!")
@@ -124,7 +129,9 @@ def save_image_output(images, **kwargs):
         save_path = 'data/preprocessed/{}/'.format(type)
         if not os.path.exists(save_path):
             os.makedirs(save_path.format(type))
-        np.save(open('{}{}.npy'.format(save_path, i), 'wb'), reshaped_value)
+        full_save_path = '{}{}'.format(save_path, get_file_name(image))
+        print("full save path ", full_save_path)
+        np.save(open(full_save_path, 'wb'), reshaped_value)
         print(reshaped_value.shape)
 
 
