@@ -30,11 +30,55 @@ import utilities
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
-flags.DEFINE_integer('max_steps', 500, 'Number of steps to run trainer.')
-flags.DEFINE_integer('batch_size', 32, 'Batch size.')
+flags.DEFINE_float('dropout', 0.5, 'Dropout rate')
+flags.DEFINE_integer('max_steps', 5000, 'Number of steps to run trainer.')
+flags.DEFINE_integer('batch_size', 128, 'Batch size.')
 flags.DEFINE_string('train_dir', './pascal_train/', 'train dir')
 flags.DEFINE_string('prep_train_dir', './preprocessed/training/', 'preprocessed training images')
 flags.DEFINE_string('prep_val_dir', './preprocessed/validation/', 'preprocessed validation images')
+
+# class ImagesHolder(object):
+#     """docstring for ClassName"""
+#     def __init__(self, training_images, training_labels, validation_images, validation_labels):
+#         self.train_images = training_images
+#         self.train_labels = training_labels
+#         self.val_images = validation_images
+#         self.val_labels = validation_labels
+#         self.train_index = np.arange(len(self.train_labels))
+#         self.val_index = np.arange(len(self.val_labels))
+#         self.train_pos = 0
+#         self.val_pos = 0
+#         self.shuffle()
+#         self.train_pos_max = len(self.train_labels)
+#         self.val_pos_max = len(self.val_labels)
+
+#     def shuffle_training(self):
+#         np.random.shuffle(self.train_index)
+#         self.train_pos = 0 
+
+#     def shuffle_validation(self):
+#         np.random.shuffle(self.val_index)
+#         self.val_pos = 0]
+
+#     def get_next_train_batch(self, image_type):
+#         batch_size = int(flags.batch_size)
+#         images = None
+#         labels = None
+#         need_more = False
+#         remainder = None
+
+#         end = self.train_pos + batch_size
+#         if end > self.train_pos_max:
+#             end = self.train_pos_max
+#             remainder = self.train_pos_max - (self.train_pos + batch_size)
+#             need_more = True
+        
+#         images = self.train_images[self.train_index[self.train_pos:end]]
+#         self.train_pos = self.train_pos + batch_size
+
+#         if need_more:
+#             self.shuffle_training()
+#             images = np.stack(ima)
 
 
 def placeholder_inputs(batch_size):
@@ -63,21 +107,29 @@ def sample_images_and_labels(images, labels, batch_size):
     return images[indices], labels[indices]
 
 
-def fill_feed_dict(images, labels, images_placeholder, labels_placeholder, batch_size=FLAGS.batch_size):
+def fill_feed_dict(images, labels, images_placeholder, labels_placeholder, keep_prob, batch_size=FLAGS.batch_size, validation=False):
     """Fills the feed_dict for training the given step.
     Returns:
       feed_dict: The feed dictionary mapping from placeholders to values.
     """
     # Create the feed_dict for the placeholders filled with the next [batch size] examples.
     images_feed, labels_feed = sample_images_and_labels(images, labels, batch_size)
-    feed_dict = {
-        images_placeholder: images_feed,
-        labels_placeholder: labels_feed,
-    }
+    if validation:
+        feed_dict = {
+            images_placeholder: images_feed,
+            labels_placeholder: labels_feed,
+            keep_prob: 1.0
+        }
+    else:
+        feed_dict = {
+            images_placeholder: images_feed,
+            labels_placeholder: labels_feed,
+            keep_prob: FLAGS.dropout
+        }
     return feed_dict
 
 
-def do_eval(sess, eval_correct, images, labels, images_placeholder, labels_placeholder):
+def do_eval(sess, eval_correct, images, labels, images_placeholder, labels_placeholder, keep_prob):
     """Runs one evaluation against the full epoch of data.
     Args:
         sess: The session in which the model has been trained.
@@ -91,6 +143,7 @@ def do_eval(sess, eval_correct, images, labels, images_placeholder, labels_place
         feed_dict = {
             images_placeholder: images[(step * FLAGS.batch_size):((step + 1) * FLAGS.batch_size)],
             labels_placeholder: labels[(step * FLAGS.batch_size):((step + 1) * FLAGS.batch_size)],
+            keep_prob: 1.0
         }
         #feed_dict = fill_feed_dict(images, labels, images_placeholder, labels_placeholder)
         true_count += sess.run(eval_correct, feed_dict=feed_dict)
@@ -99,7 +152,7 @@ def do_eval(sess, eval_correct, images, labels, images_placeholder, labels_place
           (num_examples, true_count, precision))
 
 
-def do_eval_per_class(sess, eval_correct, images, labels, images_placeholder, labels_placeholder):
+def do_eval_per_class(sess, eval_correct, images, labels, images_placeholder, labels_placeholder, keep_prob):
     """Runs one evaluation against the full epoch of data.
     Args:
         sess: The session in which the model has been trained.
@@ -108,7 +161,7 @@ def do_eval_per_class(sess, eval_correct, images, labels, images_placeholder, la
     for i in np.unique(labels):
         indices = np.where(labels == i)
         print(' Class {}:'.format(utilities.name_by_label[i]))
-        do_eval(sess, eval_correct, images[indices], labels[indices], images_placeholder, labels_placeholder)
+        do_eval(sess, eval_correct, images[indices], labels[indices], images_placeholder, labels_placeholder, keep_prob)
 
 
 def save_image_output(images, image_type):
@@ -162,9 +215,10 @@ def run_training(training_images, training_labels, validation_images, validation
 
     # Create placeholders
     images_placeholder, labels_placeholder = placeholder_inputs(FLAGS.batch_size)
+    keep_prob = tf.placeholder(tf.float32)
 
     # Define the different Ops from the network
-    logits = cnn.inference(images_placeholder)
+    logits = cnn.inference(images_placeholder, keep_prob)
     loss = cnn.loss(logits, labels_placeholder)
     train_op = cnn.training(loss, FLAGS.learning_rate)
     eval_correct = cnn.evaluation(logits, labels_placeholder)
@@ -182,11 +236,12 @@ def run_training(training_images, training_labels, validation_images, validation
 
     for step in range(FLAGS.max_steps):
         start_time = time.time()
+        
         # Fill a feed dictionary with the actual set of images and labels
         # for this particular training step.
         # Fill a feed dictionary with the actual set of images and labels
         # for this particular training step.
-        feed_dict = fill_feed_dict(training_images, training_labels, images_placeholder, labels_placeholder)
+        feed_dict = fill_feed_dict(training_images, training_labels, images_placeholder, labels_placeholder, keep_prob, validation=False)
 
         # Run one step of the model.  The return values are the activations
         # from the `train_op` (which is discarded) and the `loss` Op.  To
@@ -218,13 +273,19 @@ def run_training(training_images, training_labels, validation_images, validation
             print("Model saved in file: {}".format(checkpoint_path))
             # Evaluate against the training set.
             print('Training Data Eval:')
-            do_eval(sess, eval_correct, training_images, training_labels, images_placeholder, labels_placeholder)
+            do_eval(sess, eval_correct, training_images, training_labels, images_placeholder, labels_placeholder, keep_prob)
 
             # Evaluate against the validation set.
             print('Validation Data Eval:')
             print(' Overall score:')
-            do_eval(sess, eval_correct, validation_images, validation_labels, images_placeholder, labels_placeholder)
+            do_eval(sess, eval_correct, validation_images, validation_labels, images_placeholder, labels_placeholder, keep_prob)
 
         if step + 1 == FLAGS.max_steps:
             do_eval_per_class(sess, eval_correct, validation_images, validation_labels,
-                              images_placeholder, labels_placeholder)
+                              images_placeholder, labels_placeholder, keep_prob)
+
+    print("learning rate: ", flags.learning_rate)
+    print("dropout: ", flags.dropout)
+    print("max steps: ", flags.max_steps)
+    print("batch size: ", flags.batch_size)
+

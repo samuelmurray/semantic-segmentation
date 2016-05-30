@@ -82,7 +82,7 @@ def inference_to_save():
     return pool_tensor
 
 
-def inference(images_data):
+def inference(images_data, keep_prob):
     def weight_variable(shape):
         initial = tf.truncated_normal(shape, stddev=0.1)
         return tf.Variable(initial)
@@ -97,6 +97,7 @@ def inference(images_data):
         b_FCa = bias_variable([1024])
         #pool_flat = tf.reshape(images_data, [-1, 2048])
         h_FCa = tf.nn.relu(tf.matmul(images_data, W_FCa) + b_FCa)
+        h_FCa = tf.nn.dropout(h_FCa, keep_prob)
 
     # Readout layer, known as FCb
     with tf.name_scope("FCb") as scope:
