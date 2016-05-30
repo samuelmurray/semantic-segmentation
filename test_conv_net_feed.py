@@ -21,6 +21,13 @@ image_data = cnnutil.preprocess_images(image_names)
 cnnfeed.run_training(image_data, image_labels, image_data, image_labels)
 """
 
+def get_train_val_imgs_labels():
+    train_images = np.load(open('data/preprocessed/train_images.npy', 'rb'))
+    train_labels = np.load(open('data/preprocessed/train_labels.npy', 'rb'))
+    val_images = np.load(open('data/preprocessed/val_images.npy', 'rb'))
+    val_labels = np.load(open('data/preprocessed/val_labels.npy', 'rb'))
+    return train_images, train_labels, val_images, val_labels
+
 
 def get_images_and_label(image_type):
     if image_type != 'training' and image_type != 'validation':
@@ -40,19 +47,15 @@ def get_images_and_label(image_type):
             images.append(np.load(open(data_dir + file, 'rb')))
             label = utilities.label_by_name[split_name[2]]
             labels.append(label)
-    print("Done loading images, {} in total".format(i))
     labels = np.array(labels)
     images = np.stack(images)
     return images, labels
 
 
-train_images, train_labels = get_images_and_label('training')
-np.save(open('data/preprocessed/train_images.npy', 'wb'), train_images)
-np.save(open('data/preprocessed/train_labels.npy', 'wb'), train_labels)
+#train_images, train_labels = get_images_and_label('training')
+#val_images, val_labels = get_images_and_label('validation')
 
-val_images, val_labels = get_images_and_label('validation')
-np.save(open('data/preprocessed/val_images.npy', 'wb'), val_images)
-np.save(open('data/preprocessed/val_labels.npy', 'wb'), val_labels)
+train_images, train_labels, val_images, val_labels = get_train_val_imgs_labels()
 
 print("Training images size: \t %s MB" % (train_images.nbytes/1024/1024))
 print("Training labels size: \t %s MB" % (train_labels.nbytes/1024/1024))
