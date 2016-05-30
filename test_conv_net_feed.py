@@ -31,7 +31,7 @@ def get_images_and_label(image_type):
     images = []
     labels = []
     for i, file in enumerate(os.listdir(data_dir)):
-        if i % 100 == 0:
+        if i % 1000 == 0:
             print("Loaded {} of the {} images".format(i, image_type))
         if file.endswith(".npy"):
             split_name = file.split('_')
@@ -47,6 +47,11 @@ def get_images_and_label(image_type):
 
 train_images, train_labels = get_images_and_label('training')
 val_images, val_labels = get_images_and_label('validation')
+
+print("Training images size: \t %s MB" % (train_images.nbytes/1024/1024))
+print("Training labels size: \t %s MB" % (train_labels.nbytes/1024/1024))
+print("Validation images size: \t %s MB" % (val_images.nbytes/1024/1024))
+print("Validation labels size: \t %s MB" % (val_labels.nbytes/1024/1024))
 
 cnnfeed.run_training(train_images, train_labels, val_images, val_labels)
 
