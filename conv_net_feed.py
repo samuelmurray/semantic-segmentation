@@ -25,6 +25,7 @@ import numpy as np
 import tensorflow as tf
 
 import conv_net as cnn
+import utilities
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -96,6 +97,18 @@ def do_eval(sess, eval_correct, images, labels, images_placeholder, labels_place
     precision = true_count / num_examples
     print('  Num examples: %d  Num correct: %d  Precision @ 1: %0.04f' %
           (num_examples, true_count, precision))
+
+
+def do_eval_per_class(sess, eval_correct, images, labels, images_placeholder, labels_placeholder):
+    """Runs one evaluation against the full epoch of data.
+    Args:
+        sess: The session in which the model has been trained.
+        eval_correct: The Tensor that returns the number of correct predictions.
+    """
+    for i in np.unique(labels):
+        indices = np.where(labels == i)
+        print(' Class {}:'.format(utilities.name_by_label[i]))
+        do_eval(sess, eval_correct, images[indices], labels[indices], images_placeholder, labels_placeholder)
 
 
 def save_image_output(images, image_type):
@@ -192,11 +205,11 @@ def run_training(training_images, training_labels, validation_images, validation
             print('%s: Step %d: loss = %.2f (%.1f examples/sec; %.3f sec/batch)'
                   % (datetime.now(), step, loss_value, examples_per_sec, sec_per_batch))
 
-        if step % 100 == 0:
+        if step % 10 == 0:
             # Update the events file.
             summary_str = sess.run(summary_op, feed_dict=feed_dict)
             summary_writer.add_summary(summary_str, step)
-            print("Summary writer flushed with string {} at step {}".format(summary_str, step))
+            #print("Summary writer flushed with string {} at step {}".format(summary_str, step))
             summary_writer.flush()
 
         if step % 1000 == 0 or (step + 1) == FLAGS.max_steps:
@@ -209,4 +222,9 @@ def run_training(training_images, training_labels, validation_images, validation
 
             # Evaluate against the validation set.
             print('Validation Data Eval:')
+            print(' Overall score:')
             do_eval(sess, eval_correct, validation_images, validation_labels, images_placeholder, labels_placeholder)
+
+        if step + 1 == FLAGS.max_steps:
+            do_eval_per_class(sess, eval_correct, validation_images, validation_labels,
+                              images_placeholder, labels_placeholder)
