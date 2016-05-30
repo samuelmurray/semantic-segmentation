@@ -7,12 +7,14 @@ import conv_net_feed as cnnfeed
 import conv_net_util as cnnutil
 #from utilities import training_images, training_labels, validation_images, validation_labels
 from utilities import train_images_by_label, val_images_by_label
-#from utilities import name_by_label, label_by_name
+from utilities import name_by_label, label_by_name
 import argparse
 import random
 
 # from utilities import training_images_small, training_labels_small, validation_images_small, validation_labels_small
-chosen_labels = ["car", "cow", "train", "cat", "person", "background"]
+# chosen_labels = ["car", "cow", "train", "cat", "person", "background"]
+chosen_labels = ['sheep', 'bottle', 'horse', 'bicycle', 'aeroplane', 'sofa', 'motorbike', 'dog', 'bus',
+                 'pottedplant', 'tvmonitor', 'chair', 'bird', 'diningtable', 'background']
 
 
 def parse_args():
@@ -21,6 +23,17 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
+# for label in chosen_labels:
+#     train_names = train_images_by_label[label]
+#     val_names = val_images_by_label[label]
+#
+#     start_time = time.time()
+#     print("starting on training: ", label)
+#     cnnfeed.save_image_output(train_names, image_type="training")
+#     print("starting on validation: ", label)
+#     cnnfeed.save_image_output(val_names, image_type="validation")
+#     print("Saving {} train and {} val images took {}s".format(len(train_names), len(val_names), time.time() - start_time))
 
 args = parse_args()
 index = int(args.index)
@@ -32,8 +45,8 @@ val_names = val_images_by_label[label]
 random.shuffle(train_names)
 random.shuffle(val_names)
 
-train_names = train_names[0:3000]
-val_names = val_names[0:1000]
+# train_names = train_names[0:3000]
+# val_names = val_names[0:1000]
 
 
 start_time = time.time()

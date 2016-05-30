@@ -124,26 +124,31 @@ def save_image_output(images, image_type):
     if image_type != "training" and image_type != "validation":
         print("Wrong kwargs!")
         return
-    if not tf.gfile.Exists(FLAGS.prep_train_dir):
-        tf.gfile.MakeDirs(FLAGS.prep_train_dir)
-    if not tf.gfile.Exists(FLAGS.prep_val_dir):
-        tf.gfile.MakeDirs(FLAGS.prep_val_dir)
+    # if not tf.gfile.Exists(FLAGS.prep_train_dir):
+    #     tf.gfile.MakeDirs(FLAGS.prep_train_dir)
+    # if not tf.gfile.Exists(FLAGS.prep_val_dir):
+    #     tf.gfile.MakeDirs(FLAGS.prep_val_dir)
 
     output = cnn.inference_to_save()
 
     sess = tf.Session()
 
     for i, image in enumerate(images):
-        if not tf.gfile.Exists(image):
-            tf.logging.fatal('File does not exist %s', image)
-        image_data = tf.gfile.FastGFile(image, 'rb').read()
-        precomputed_value = sess.run(output, {'DecodeJpeg/contents:0': image_data})
-        reshaped_value = np.squeeze(precomputed_value)
         save_path = 'data/preprocessed/{}/'.format(image_type)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
         full_save_path = '{}{}'.format(save_path, get_file_name(image))
         print("full save path ", full_save_path)
+        if os.path.isfile(full_save_path):
+            print("Skipping ", full_save_path)
+            continue
+
+        if not tf.gfile.Exists(image):
+            tf.logging.fatal('File does not exist %s', image)
+        image_data = tf.gfile.FastGFile(image, 'rb').read()
+        precomputed_value = sess.run(output, {'DecodeJpeg/contents:0': image_data})
+        reshaped_value = np.squeeze(precomputed_value)
+
         np.save(open(full_save_path, 'wb'), reshaped_value)
         print(reshaped_value.shape)
 
